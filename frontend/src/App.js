@@ -381,11 +381,11 @@ function App() {
                     />
                     <Button
                       onClick={() => handleGenerateMemes(builderKeywords)}
-                      disabled={generating || (!builderKeywords && imageMode === 'uploaded' && ocrResults.length === 0)}
+                      disabled={generating || (!builderKeywords && ocrResults.length === 0)}
                       className="bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 px-8 text-lg"
                     >
                       <Sparkles className="w-5 h-5 mr-2" />
-                      Generate 4 Options
+                      Generate Text for 4 Memes
                     </Button>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">Tip: Use NSFW words freely - they work better!</p>
