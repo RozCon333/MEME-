@@ -247,6 +247,26 @@ async def root():
     return {"message": "Meme OCR & Generator API"}
 
 
+@api_router.get("/tone-presets")
+async def get_tone_presets():
+    """Get predefined tone presets"""
+    presets = [
+        {"name": "Sarcastic AF", "naughty": 6, "sexy": 3, "funny": 9, "rude": 7, "description": "Eye-rolling sarcasm"},
+        {"name": "Super Horny", "naughty": 10, "sexy": 10, "funny": 6, "rude": 5, "description": "Maximum horniness"},
+        {"name": "Savage Roast", "naughty": 5, "sexy": 2, "funny": 8, "rude": 10, "description": "Brutal insults"},
+        {"name": "Dark Humor", "naughty": 8, "sexy": 4, "funny": 9, "rude": 8, "description": "Twisted and dark"},
+        {"name": "Flirty Tease", "naughty": 7, "sexy": 9, "funny": 7, "rude": 3, "description": "Playful seduction"},
+        {"name": "Angry Rant", "naughty": 6, "sexy": 2, "funny": 5, "rude": 10, "description": "Pissed off energy"},
+        {"name": "Dad Jokes NSFW", "naughty": 4, "sexy": 3, "funny": 10, "rude": 4, "description": "Corny but dirty"},
+        {"name": "Passive Aggressive", "naughty": 5, "sexy": 2, "funny": 7, "rude": 9, "description": "Subtle shade"},
+        {"name": "Drunk Thoughts", "naughty": 8, "sexy": 7, "funny": 9, "rude": 6, "description": "3AM vibes"},
+        {"name": "Wholesome Horny", "naughty": 7, "sexy": 8, "funny": 8, "rude": 2, "description": "Sweet but spicy"},
+        {"name": "Existential Crisis", "naughty": 5, "sexy": 3, "funny": 8, "rude": 6, "description": "Deep thoughts"},
+        {"name": "Petty Queen", "naughty": 6, "sexy": 5, "funny": 7, "rude": 9, "description": "Extra petty"},
+    ]
+    return {"presets": presets}
+
+
 @api_router.post("/upload-memes")
 async def upload_memes(files: List[UploadFile] = File(...)):
     """Upload multiple meme images and perform OCR with image enhancement"""
