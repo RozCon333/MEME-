@@ -86,6 +86,15 @@ class UpdateTextRequest(BaseModel):
 # Initialize spell checker
 spell = SpellChecker()
 
+# Common NSFW words to always keep
+NSFW_WHITELIST = {
+    'fuck', 'fucking', 'fucked', 'fucker', 'shit', 'shitting', 'shitty', 
+    'damn', 'damned', 'sex', 'sexy', 'sexual', 'boobs', 'tits', 'titties', 
+    'ass', 'asses', 'dick', 'dicks', 'cock', 'cocks', 'bitch', 'bitches',
+    'pussy', 'pussies', 'cum', 'cumming', 'porn', 'horny', 'nude', 'naked',
+    'bastard', 'hell', 'piss', 'crap', 'slut', 'whore', 'penis', 'vagina'
+}
+
 def auto_correct_text(text):
     """Auto-correct obvious OCR mistakes"""
     words = text.split()
@@ -97,27 +106,32 @@ def auto_correct_text(text):
             corrected_words.append(word)
             continue
         
-        # Clean word
+        # Clean word for checking
         clean_word = re.sub(r'[^a-zA-Z]', '', word.lower())
         
         if not clean_word:
             corrected_words.append(word)
             continue
         
-        # Check if misspelled (but keep NSFW words!)
-        nsfw_words = ['fuck', 'shit', 'damn', 'sex', 'boobs', 'ass', 'dick', 'bitch', 'pussy', 'cock']
-        if clean_word in nsfw_words:
+        # ALWAYS keep NSFW words!
+        if clean_word in NSFW_WHITELIST:
             corrected_words.append(word)
-        elif spell.unknown([clean_word]):
+            continue
+        
+        # Check if misspelled
+        if spell.unknown([clean_word]):
             # Get correction
             correction = spell.correction(clean_word)
-            if correction and correction != clean_word:
+            
+            # Only use correction if it's valid and different
+            if correction and correction != clean_word and correction in spell:
                 # Preserve original capitalization
                 if word[0].isupper():
                     correction = correction.capitalize()
                 corrected_words.append(correction)
             else:
-                corrected_words.append(word)
+                # If no good correction, skip the word (it's probably garbage OCR)
+                continue
         else:
             corrected_words.append(word)
     
