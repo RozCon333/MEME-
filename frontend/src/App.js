@@ -363,9 +363,9 @@ function App() {
           <TabsContent value="builder">
             <Card className="bg-black/60 border-pink-500/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-pink-300 text-2xl">🎨 Meme Builder - Create From Scratch!</CardTitle>
+                <CardTitle className="text-pink-300 text-2xl">🎨 Meme Builder - AI Writes The Text!</CardTitle>
                 <CardDescription className="text-gray-400 text-lg">
-                  Enter keywords, adjust tone, pick style, and generate! Get 4 options each round.
+                  Upload images, enter keywords, adjust tone - AI creates hilarious text! Get 4 options each round.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
