@@ -43,6 +43,7 @@ class MemeOCR(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     filename: str
     extracted_text: str
+    keywords: List[str]  # New: extracted keywords
     word_count: int
     image_data: str  # base64 encoded
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -54,10 +55,93 @@ class GeneratedMeme(BaseModel):
     text: str
     image_data: str  # base64 encoded with overlay
     source_words: List[str]
+    keyword_pattern: str  # New: pattern used for generation
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class GenerateMemeRequest(BaseModel):
     count: int = 5
+
+
+# Helper Functions for Image Processing and Keyword Extraction
+
+def preprocess_image_for_ocr(image):
+    """Enhance low-res images for better OCR"""
+    # Convert PIL to numpy array
+    img_array = np.array(image)
+    
+    # Convert to grayscale if not already
+    if len(img_array.shape) == 3:
+        gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
+    else:
+        gray = img_array
+    
+    # Upscale if too small (helps with low-res)
+    height, width = gray.shape
+    if width < 500 or height < 500:
+        scale = max(500 / width, 500 / height)
+        new_width = int(width * scale)
+        new_height = int(height * scale)
+        gray = cv2.resize(gray, (new_width, new_height), interpolation=cv2.INTER_CUBIC)
+    
+    # Denoise
+    denoised = cv2.fastNlMeansDenoising(gray, None, 10, 7, 21)
+    
+    # Increase contrast
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    enhanced = clahe.apply(denoised)
+    
+    # Sharpen
+    kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+    sharpened = cv2.filter2D(enhanced, -1, kernel)
+    
+    # Convert back to PIL
+    return Image.fromarray(sharpened)
+
+
+def extract_keywords(text, min_length=3, max_keywords=10):
+    """Extract meaningful keywords from text"""
+    # Common words to ignore
+    stop_words = {
+        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+        'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
+        'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
+        'should', 'could', 'may', 'might', 'must', 'can', 'that', 'this',
+        'it', 'its', 'i', 'you', 'he', 'she', 'we', 'they', 'them', 'their'
+    }
+    
+    # Clean and tokenize
+    text = text.lower()
+    words = re.findall(r'\b[a-z]+\b', text)
+    
+    # Filter words
+    keywords = [
+        word for word in words 
+        if len(word) >= min_length and word not in stop_words
+    ]
+    
+    # Get most frequent keywords
+    word_counts = Counter(keywords)
+    top_keywords = [word for word, count in word_counts.most_common(max_keywords)]
+    
+    return top_keywords
+
+
+def build_keyword_patterns(all_keywords):
+    """Build patterns from keyword combinations"""
+    patterns = []
+    
+    # Single keywords
+    patterns.extend(all_keywords[:20])
+    
+    # Keyword pairs (common patterns)
+    keyword_pairs = []
+    for i, kw1 in enumerate(all_keywords[:15]):
+        for kw2 in all_keywords[i+1:16]:
+            keyword_pairs.append(f"{kw1}+{kw2}")
+    
+    patterns.extend(keyword_pairs[:10])
+    
+    return patterns
 
 
 # Routes
