@@ -329,46 +329,81 @@ async def download_csv():
 
 @api_router.post("/generate-new-memes")
 async def generate_new_memes(request: GenerateMemeRequest):
-    """Generate new NSFW adult humor memes using keyword algorithm"""
+    """Generate new NSFW adult humor memes using keyword algorithm with TONE control"""
     
-    # Get all extracted data
-    ocr_results = await db.meme_ocr.find({}, {"_id": 0}).to_list(1000)
-    
-    if not ocr_results:
-        raise HTTPException(status_code=404, detail="No meme data available. Please upload memes first.")
-    
-    # COLLECT ALL KEYWORDS (including NSFW)
-    all_keywords = []
-    for result in ocr_results:
-        all_keywords.extend(result.get('keywords', []))
-    
-    # Get unique keywords with frequency
-    keyword_counts = Counter(all_keywords)
-    top_keywords = [kw for kw, count in keyword_counts.most_common(30)]
+    # Use custom keywords if provided, otherwise get from database
+    if request.keywords and len(request.keywords) > 0:
+        top_keywords = request.keywords
+    else:
+        # Get all extracted data
+        ocr_results = await db.meme_ocr.find({}, {"_id": 0}).to_list(1000)
+        
+        if not ocr_results:
+            raise HTTPException(status_code=404, detail="No meme data available. Please upload memes first.")
+        
+        # COLLECT ALL KEYWORDS (including NSFW)
+        all_keywords = []
+        for result in ocr_results:
+            all_keywords.extend(result.get('keywords', []))
+        
+        # Get unique keywords with frequency
+        keyword_counts = Counter(all_keywords)
+        top_keywords = [kw for kw, count in keyword_counts.most_common(30)]
     
     # Build keyword patterns
     patterns = build_keyword_patterns(top_keywords)
     
-    # Initialize LLM chat with EXPLICIT NSFW instructions
+    # Get tone settings (default to 5 if not provided)
+    tone = request.tone if request.tone else ToneSettings()
+    
+    # BUILD TONE-SPECIFIC PROMPT
+    tone_descriptors = []
+    if tone.naughty >= 7:
+        tone_descriptors.append("EXTRA NAUGHTY and inappropriate")
+    elif tone.naughty >= 5:
+        tone_descriptors.append("naughty")
+    
+    if tone.sexy >= 7:
+        tone_descriptors.append("EXTRA SEXY with heavy sexual innuendos")
+    elif tone.sexy >= 5:
+        tone_descriptors.append("sexy and flirty")
+    
+    if tone.funny >= 7:
+        tone_descriptors.append("HILARIOUS and absurd")
+    elif tone.funny >= 5:
+        tone_descriptors.append("funny")
+    
+    if tone.rude >= 7:
+        tone_descriptors.append("BRUTALLY RUDE and offensive")
+    elif tone.rude >= 5:
+        tone_descriptors.append("rude and edgy")
+    
+    tone_description = ", ".join(tone_descriptors) if tone_descriptors else "balanced adult humor"
+    
+    # Initialize LLM chat with EXPLICIT NSFW instructions + TONE
     api_key = os.environ.get('EMERGENT_LLM_KEY')
     chat = LlmChat(
         api_key=api_key,
         session_id=str(uuid.uuid4()),
-        system_message="""You are an NSFW meme generator. Create EXPLICIT adult humor memes with sexual content. 
+        system_message=f"""You are an NSFW meme generator for MISS TITTY SPRINKLES FUCKING FUCKING FACTORY.
+Create EXPLICIT adult humor memes with sexual content. 
 Use profanity freely (fuck, shit, damn, etc.). 
 Include sexual references (sex, boobs, dick, ass, etc.).
 Be edgy, raunchy, and hilarious. No filters, no censorship.
+TONE: Make it {tone_description}.
 This is for adult entertainment only."""
     ).with_model("openai", "gpt-4o")
     
-    # Generate memes with NSFW prompt
+    # Generate memes with NSFW + TONE prompt
     keyword_list = ', '.join(top_keywords[:25])
     prompt = f"""Using these NSFW keywords: {keyword_list}
 
-Create {request.count} EXPLICIT NSFW adult humor meme texts. Requirements:
+Create {request.count} EXPLICIT NSFW adult humor meme texts with this TONE: {tone_description}
+
+Requirements:
 - Use profanity freely (fuck, shit, damn, etc.)
 - Include sexual references and innuendos
-- Be raunchy and edgy
+- Be {tone_description}
 - Short format (1-2 lines)
 - Hilarious and inappropriate
 - Mix keywords creatively
@@ -394,6 +429,8 @@ Return ONLY the JSON array."""
         
         # Get random images from uploaded memes for overlay
         sample_images = await db.meme_ocr.find({}, {"_id": 0, "image_data": 1}).to_list(request.count)
+        if not sample_images:
+            raise HTTPException(status_code=404, detail="No images available")
         
         generated_memes = []
         for idx, meme in enumerate(meme_data):
@@ -419,12 +456,14 @@ Return ONLY the JSON array."""
                 text=meme['text'],
                 image_data=final_img_base64,
                 source_words=meme.get('source_words', []),
-                keyword_pattern=pattern
+                keyword_pattern=pattern,
+                tone_used=tone
             )
             
             # Save to database
             doc = generated_meme.model_dump()
             doc['timestamp'] = doc['timestamp'].isoformat()
+            doc['tone_used'] = tone.model_dump()
             await db.generated_memes.insert_one(doc)
             
             generated_memes.append({
@@ -432,7 +471,8 @@ Return ONLY the JSON array."""
                 "text": generated_meme.text,
                 "image_data": final_img_base64,
                 "source_words": generated_meme.source_words,
-                "pattern": pattern
+                "pattern": pattern,
+                "tone": tone.model_dump()
             })
         
         return {"generated": len(generated_memes), "memes": generated_memes}
