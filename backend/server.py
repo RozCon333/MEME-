@@ -541,10 +541,45 @@ Return ONLY the JSON array."""
         
         meme_data = json.loads(response_text)
         
-        # Get random images from uploaded memes for overlay
-        sample_images = await db.meme_ocr.find({}, {"_id": 0, "image_data": 1}).to_list(request.count)
-        if not sample_images:
-            raise HTTPException(status_code=404, detail="No images available")
+        # GENERATE OR GET IMAGES
+        if request.generate_images or request.custom_prompt:
+            # AI-GENERATE BACKGROUNDS
+            api_key = os.environ.get('EMERGENT_LLM_KEY')
+            image_gen = OpenAIImageGeneration(api_key=api_key)
+            
+            generated_images = []
+            for meme in meme_data:
+                if request.custom_prompt:
+                    # Use custom prompt
+                    img_prompt = request.custom_prompt
+                else:
+                    # Auto-generate prompt from meme text
+                    img_prompt = f"Funny meme background image, colorful, abstract, suitable for text overlay, {meme['text'][:50]}"
+                
+                try:
+                    images = await image_gen.generate_images(
+                        prompt=img_prompt,
+                        model="gpt-image-1",
+                        number_of_images=1
+                    )
+                    if images:
+                        generated_images.append(base64.b64encode(images[0]).decode('utf-8'))
+                    else:
+                        # Fallback to uploaded image
+                        sample_images = await db.meme_ocr.find({}, {"_id": 0, "image_data": 1}).to_list(1)
+                        if sample_images:
+                            generated_images.append(sample_images[0]['image_data'])
+                except:
+                    # Fallback to uploaded image on error
+                    sample_images = await db.meme_ocr.find({}, {"_id": 0, "image_data": 1}).to_list(1)
+                    if sample_images:
+                        generated_images.append(sample_images[0]['image_data'])
+        else:
+            # Use uploaded meme images
+            sample_images = await db.meme_ocr.find({}, {"_id": 0, "image_data": 1}).to_list(request.count)
+            if not sample_images:
+                raise HTTPException(status_code=404, detail="No images available")
+            generated_images = [img['image_data'] for img in sample_images]
         
         generated_memes = []
         for idx, meme in enumerate(meme_data):
