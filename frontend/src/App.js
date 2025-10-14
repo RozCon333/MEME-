@@ -30,6 +30,14 @@ function App() {
   const [funny, setFunny] = useState(5);
   const [rude, setRude] = useState(5);
   
+  // Tone presets
+  const [tonePresets, setTonePresets] = useState([]);
+  const [selectedPreset, setSelectedPreset] = useState('');
+  
+  // Style controls
+  const [memeLength, setMemeLength] = useState('short');
+  const [memeFormat, setMemeFormat] = useState('statement');
+  
   // Meme builder
   const [builderMode, setBuilderMode] = useState(false);
   const [builderKeywords, setBuilderKeywords] = useState('');
@@ -44,6 +52,7 @@ function App() {
   useEffect(() => {
     loadOcrResults();
     loadGeneratedMemes();
+    loadTonePresets();
   }, []);
 
   const loadOcrResults = async () => {
