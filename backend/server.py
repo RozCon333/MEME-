@@ -152,7 +152,7 @@ async def root():
 
 @api_router.post("/upload-memes")
 async def upload_memes(files: List[UploadFile] = File(...)):
-    """Upload multiple meme images and perform OCR"""
+    """Upload multiple meme images and perform OCR with image enhancement"""
     results = []
     
     for file in files:
@@ -161,8 +161,33 @@ async def upload_memes(files: List[UploadFile] = File(...)):
             contents = await file.read()
             image = Image.open(io.BytesIO(contents))
             
-            # Perform OCR
-            extracted_text = pytesseract.image_to_string(image)
+            # ENHANCE IMAGE FOR BETTER OCR (handles low-res)
+            enhanced_image = preprocess_image_for_ocr(image)
+            
+            # Perform OCR on enhanced image
+            extracted_text = pytesseract.image_to_string(enhanced_image).strip()
+            
+            # SKIP IMAGES WITH NO TEXT (or very little)
+            if len(extracted_text) < 5:  # Less than 5 characters = probably no text
+                results.append({
+                    "filename": file.filename,
+                    "error": "No text detected - image skipped",
+                    "status": "skipped"
+                })
+                continue
+            
+            # EXTRACT KEYWORDS (keeps NSFW words!)
+            keywords = extract_keywords(extracted_text, min_length=3, max_keywords=15)
+            
+            # Skip if no meaningful keywords
+            if len(keywords) == 0:
+                results.append({
+                    "filename": file.filename,
+                    "error": "No keywords found - image skipped",
+                    "status": "skipped"
+                })
+                continue
+            
             word_count = len(extracted_text.split())
             
             # Convert image to base64
@@ -173,7 +198,8 @@ async def upload_memes(files: List[UploadFile] = File(...)):
             # Create meme OCR object
             meme_ocr = MemeOCR(
                 filename=file.filename,
-                extracted_text=extracted_text.strip(),
+                extracted_text=extracted_text,
+                keywords=keywords,
                 word_count=word_count,
                 image_data=img_base64
             )
@@ -185,7 +211,8 @@ async def upload_memes(files: List[UploadFile] = File(...)):
             
             results.append({
                 "filename": file.filename,
-                "extracted_text": extracted_text.strip(),
+                "extracted_text": extracted_text,
+                "keywords": keywords,
                 "word_count": word_count,
                 "status": "success"
             })
@@ -197,7 +224,15 @@ async def upload_memes(files: List[UploadFile] = File(...)):
                 "status": "failed"
             })
     
-    return {"uploaded": len(files), "results": results}
+    successful = len([r for r in results if r['status'] == 'success'])
+    skipped = len([r for r in results if r['status'] == 'skipped'])
+    
+    return {
+        "uploaded": len(files), 
+        "successful": successful,
+        "skipped": skipped,
+        "results": results
+    }
 
 
 @api_router.get("/ocr-results")
