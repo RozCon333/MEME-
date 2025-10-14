@@ -271,7 +271,7 @@ function App() {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-pink-300 text-xl">🎚️ Tone Controls</CardTitle>
-              <CardDescription className="text-gray-400">Adjust the vibe of your generated memes</CardDescription>
+              <CardDescription className="text-gray-400">Adjust the vibe of your memes</CardDescription>
             </div>
             <Button
               onClick={randomizeTone}
@@ -280,7 +280,45 @@ function App() {
               🎲 RANDOMIZE
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
+            {/* Image Mode Selection */}
+            <div className="border border-pink-500/50 rounded-lg p-4 space-y-3 bg-pink-900/10">
+              <Label className="text-pink-300 font-semibold text-lg">🖼️ Background Images:</Label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <Button
+                  variant={imageMode === 'uploaded' ? 'default' : 'outline'}
+                  onClick={() => setImageMode('uploaded')}
+                  className={imageMode === 'uploaded' ? 'bg-pink-600' : 'border-pink-500/50'}
+                >
+                  📤 Use Uploaded
+                </Button>
+                <Button
+                  variant={imageMode === 'auto-generate' ? 'default' : 'outline'}
+                  onClick={() => setImageMode('auto-generate')}
+                  className={imageMode === 'auto-generate' ? 'bg-pink-600' : 'border-pink-500/50'}
+                >
+                  🎨 AI Auto
+                </Button>
+                <Button
+                  variant={imageMode === 'custom-prompt' ? 'default' : 'outline'}
+                  onClick={() => setImageMode('custom-prompt')}
+                  className={imageMode === 'custom-prompt' ? 'bg-pink-600' : 'border-pink-500/50'}
+                >
+                  ✍️ Custom
+                </Button>
+              </div>
+              
+              {imageMode === 'custom-prompt' && (
+                <Input
+                  value={customImagePrompt}
+                  onChange={(e) => setCustomImagePrompt(e.target.value)}
+                  placeholder="Describe background... (e.g., 'colorful abstract pattern')"
+                  className="bg-black/40 text-white border-pink-500/50"
+                />
+              )}
+            </div>
+
+            {/* Tone Sliders */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div>
                 <label className="text-pink-300 font-semibold mb-2 block">😈 Naughty: {naughty}</label>
