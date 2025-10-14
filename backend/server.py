@@ -236,7 +236,7 @@ async def upload_memes(files: List[UploadFile] = File(...)):
                 continue
             
             # EXTRACT KEYWORDS (keeps NSFW words!)
-            keywords = extract_keywords(extracted_text, min_length=3, max_keywords=15)
+            keywords = extract_keywords(corrected_text, min_length=3, max_keywords=15)
             
             # Skip if no meaningful keywords
             if len(keywords) == 0:
@@ -248,6 +248,9 @@ async def upload_memes(files: List[UploadFile] = File(...)):
                 continue
             
             word_count = len(extracted_text.split())
+            
+            # AUTO-CORRECT TEXT
+            corrected_text = auto_correct_text(extracted_text)
             
             # Convert image to base64
             buffered = io.BytesIO()
