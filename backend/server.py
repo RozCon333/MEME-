@@ -471,17 +471,20 @@ TONE: Make it {tone_description}.
 This is for adult entertainment only."""
     ).with_model("openai", "gpt-4o")
     
-    # Generate memes with NSFW + TONE prompt
+    # Generate memes with NSFW + TONE + STYLE prompt
     keyword_list = ', '.join(top_keywords[:25])
     prompt = f"""Using these NSFW keywords: {keyword_list}
 
-Create {request.count} EXPLICIT NSFW adult humor meme texts with this TONE: {tone_description}
+Create {request.count} EXPLICIT NSFW adult humor meme texts.
+
+TONE: {tone_description}
+STYLE: {style_desc}
 
 Requirements:
 - Use profanity freely (fuck, shit, damn, etc.)
 - Include sexual references and innuendos
 - Be {tone_description}
-- Short format (1-2 lines)
+- Follow style: {style_desc}
 - Hilarious and inappropriate
 - Mix keywords creatively
 
