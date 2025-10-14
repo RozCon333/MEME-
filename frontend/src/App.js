@@ -531,85 +531,115 @@ function App() {
             </Card>
           </TabsContent>
 
-          {/* Meme Builder Tab */}
+          {/* Meme Builder Tab - NOW FIRST! */}
           <TabsContent value="builder">
             <Card className="bg-black/60 border-pink-500/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-pink-300">🎨 Interactive Meme Builder</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Round {builderRound}: Enter keywords, get 4 options, pick one, refine, repeat!
+                <CardTitle className="text-pink-300 text-2xl">🎨 Meme Builder - Create From Scratch!</CardTitle>
+                <CardDescription className="text-gray-400 text-lg">
+                  Enter keywords, adjust tone, pick style, and generate! Get 4 options each round.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Quick Start Keywords */}
                 <div>
-                  <label className="text-pink-300 font-semibold mb-2 block">Enter Keywords (comma-separated):</label>
+                  <Label className="text-pink-300 font-semibold mb-2 block text-lg">💬 Enter Keywords:</Label>
                   <div className="flex gap-2">
                     <Input
                       value={builderKeywords}
                       onChange={(e) => setBuilderKeywords(e.target.value)}
-                      placeholder="fuck, sex, funny, etc..."
-                      className="bg-black/40 text-white border-pink-500/50 flex-1"
+                      placeholder="e.g., drunk, work, Monday, fuck, tired..."
+                      className="bg-black/40 text-white border-pink-500/50 flex-1 text-lg"
                     />
                     <Button
                       onClick={() => handleGenerateMemes(builderKeywords)}
-                      disabled={generating || !builderKeywords}
-                      className="bg-pink-600 hover:bg-pink-700"
+                      disabled={generating || (!builderKeywords && imageMode === 'uploaded' && ocrResults.length === 0)}
+                      className="bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 px-8 text-lg"
                     >
+                      <Sparkles className="w-5 h-5 mr-2" />
                       Generate 4 Options
                     </Button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Tip: Use NSFW words freely - they work better!</p>
+                </div>
+
+                {/* Tone Presets - Quick Access */}
+                <div>
+                  <Label className="text-pink-300 font-semibold mb-2 block">🎭 Quick Tone Presets:</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {tonePresets.slice(0, 8).map((preset) => (
+                      <Button
+                        key={preset.name}
+                        onClick={() => applyTonePreset(preset.name)}
+                        variant="outline"
+                        className={`border-pink-500/50 hover:bg-pink-600 text-sm ${selectedPreset === preset.name ? 'bg-pink-600' : ''}`}
+                      >
+                        {preset.name}
+                      </Button>
+                    ))}
                   </div>
                 </div>
 
                 {builderOptions.length > 0 && (
                   <>
-                    <div className="grid grid-cols-2 gap-4">
-                      {builderOptions.map((meme, idx) => (
-                        <Card
-                          key={idx}
-                          className={`cursor-pointer transition-all ${
-                            selectedMeme?.id === meme.id
-                              ? 'bg-pink-900/50 border-pink-400 border-2'
-                              : 'bg-pink-900/20 border-pink-500/30 hover:border-pink-400'
-                          }`}
-                          onClick={() => selectBuilderOption(meme)}
-                        >
-                          <CardContent className="p-4">
-                            <img
-                              src={`data:image/png;base64,${meme.image_data}`}
-                              alt="Option"
-                              className="w-full h-32 object-cover rounded mb-3"
-                            />
-                            <p className="text-white font-medium text-sm">{meme.text}</p>
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {meme.source_words.map((word, widx) => (
-                                <span key={widx} className="text-xs bg-pink-700/50 text-pink-200 px-2 py-1 rounded">
-                                  {word}
-                                </span>
-                              ))}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                    <div className="border-t border-pink-500/30 pt-6">
+                      <h3 className="text-pink-300 font-bold text-xl mb-4">Pick Your Favorite (Round {builderRound}):</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        {builderOptions.map((meme, idx) => (
+                          <Card
+                            key={idx}
+                            className={`cursor-pointer transition-all ${
+                              selectedMeme?.id === meme.id
+                                ? 'bg-pink-900/50 border-pink-400 border-2'
+                                : 'bg-pink-900/20 border-pink-500/30 hover:border-pink-400'
+                            }`}
+                            onClick={() => selectBuilderOption(meme)}
+                          >
+                            <CardContent className="p-4">
+                              <img
+                                src={`data:image/png;base64,${meme.image_data}`}
+                                alt="Option"
+                                className="w-full h-40 object-cover rounded mb-3"
+                              />
+                              <p className="text-white font-bold text-base leading-relaxed">{meme.text}</p>
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {meme.source_words.slice(0, 4).map((word, widx) => (
+                                  <span key={widx} className="text-xs bg-pink-700/50 text-pink-200 px-2 py-1 rounded">
+                                    {word}
+                                  </span>
+                                ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
                     </div>
 
                     <div className="flex gap-4">
                       <Button
                         onClick={() => handleGenerateMemes(builderKeywords)}
                         disabled={generating}
-                        className="flex-1 bg-pink-600 hover:bg-pink-700"
+                        className="flex-1 bg-pink-600 hover:bg-pink-700 text-lg"
                       >
-                        <RefreshCw className="w-4 h-4 mr-2" />
+                        <RefreshCw className="w-5 h-5 mr-2" />
                         Generate 4 More Options
                       </Button>
                       <Button
                         onClick={finishBuilder}
                         disabled={!selectedMeme}
-                        className="flex-1 bg-green-600 hover:bg-green-700"
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-lg font-bold"
                       >
-                        ✅ Finish & Save Selected
+                        ✅ Save Selected Meme
                       </Button>
                     </div>
                   </>
+                )}
+
+                {builderOptions.length === 0 && (
+                  <div className="text-center py-12 border border-dashed border-pink-500/50 rounded-lg">
+                    <Sparkles className="w-16 h-16 mx-auto mb-4 text-pink-400" />
+                    <p className="text-pink-300 text-lg">Enter keywords above and click Generate to start building!</p>
+                  </div>
                 )}
               </CardContent>
             </Card>
