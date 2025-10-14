@@ -22,7 +22,7 @@ function App() {
   const [generatedMemes, setGeneratedMemes] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [activeTab, setActiveTab] = useState('upload');
+  const [activeTab, setActiveTab] = useState('builder');
   
   // Tone sliders
   const [naughty, setNaughty] = useState(5);
