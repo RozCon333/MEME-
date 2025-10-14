@@ -462,7 +462,7 @@ async def generate_new_memes(request: GenerateMemeRequest):
     chat = LlmChat(
         api_key=api_key,
         session_id=str(uuid.uuid4()),
-        system_message=f"""You are an NSFW meme generator for FUNNY FACTORY.
+        system_message=f"""You are an NSFW meme generator for MISS TITTY SPRINKLES FUNNY FUCKING FACTORY.
 Create EXPLICIT adult humor memes with sexual content. 
 Use profanity freely (fuck, shit, damn, etc.). 
 Include sexual references (sex, boobs, dick, ass, etc.).
