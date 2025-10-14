@@ -356,6 +356,51 @@ function App() {
                   </div>
                 )}
 
+                {/* Image Source Options */}
+                <div className="border border-pink-500/50 rounded-lg p-4 space-y-3">
+                  <Label className="text-pink-300 font-semibold text-lg">🖼️ Meme Background:</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <Button
+                      variant={imageMode === 'uploaded' ? 'default' : 'outline'}
+                      onClick={() => setImageMode('uploaded')}
+                      className={imageMode === 'uploaded' ? 'bg-pink-600' : 'border-pink-500/50'}
+                    >
+                      📤 Use Uploaded Images
+                    </Button>
+                    <Button
+                      variant={imageMode === 'auto-generate' ? 'default' : 'outline'}
+                      onClick={() => setImageMode('auto-generate')}
+                      className={imageMode === 'auto-generate' ? 'bg-pink-600' : 'border-pink-500/50'}
+                    >
+                      🎨 AI Auto-Generate
+                    </Button>
+                    <Button
+                      variant={imageMode === 'custom-prompt' ? 'default' : 'outline'}
+                      onClick={() => setImageMode('custom-prompt')}
+                      className={imageMode === 'custom-prompt' ? 'bg-pink-600' : 'border-pink-500/50'}
+                    >
+                      ✍️ Custom Prompt
+                    </Button>
+                  </div>
+                  
+                  {imageMode === 'custom-prompt' && (
+                    <div className="mt-3">
+                      <Input
+                        value={customImagePrompt}
+                        onChange={(e) => setCustomImagePrompt(e.target.value)}
+                        placeholder="Describe your meme background... (e.g., 'funny abstract colorful pattern')"
+                        className="bg-black/40 text-white border-pink-500/50"
+                      />
+                    </div>
+                  )}
+                  
+                  <p className="text-xs text-gray-500">
+                    {imageMode === 'uploaded' && '✅ Uses your uploaded meme images'}
+                    {imageMode === 'auto-generate' && '🤖 AI creates backgrounds based on meme text'}
+                    {imageMode === 'custom-prompt' && '🎨 AI creates backgrounds from your description'}
+                  </p>
+                </div>
+
                 <div className="flex gap-4">
                   <Button
                     onClick={() => handleGenerateMemes()}
