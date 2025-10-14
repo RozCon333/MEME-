@@ -690,6 +690,17 @@ async def update_text(request: UpdateTextRequest):
     return {"success": True, "updated_keywords": keywords}
 
 
+@api_router.delete("/delete-meme/{meme_id}")
+async def delete_meme(meme_id: str):
+    """Delete a generated meme"""
+    result = await db.generated_memes.delete_one({"id": meme_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Meme not found")
+    
+    return {"success": True, "message": "Meme deleted"}
+
+
 @api_router.delete("/clear-data")
 async def clear_data():
     """Clear all data"""
