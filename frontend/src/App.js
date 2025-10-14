@@ -150,9 +150,9 @@ function App() {
           <TabsContent value="upload">
             <Card className="bg-black/40 border-purple-500/30 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-purple-300">Upload Meme Images</CardTitle>
+                <CardTitle className="text-purple-300">Upload Meme Images (NSFW)</CardTitle>
                 <CardDescription className="text-gray-400">
-                  Upload 100+ meme images to perform OCR and extract text
+                  Upload meme images with text. Low-res OK! Images without text will be auto-skipped. Keywords like "fuck", "sex", "boobs" are KEPT for generation.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
