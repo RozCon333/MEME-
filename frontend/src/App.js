@@ -38,6 +38,10 @@ function App() {
   const [memeLength, setMemeLength] = useState('short');
   const [memeFormat, setMemeFormat] = useState('statement');
   
+  // Image generation options
+  const [imageMode, setImageMode] = useState('uploaded'); // uploaded, auto-generate, custom-prompt
+  const [customImagePrompt, setCustomImagePrompt] = useState('');
+  
   // Meme builder
   const [builderMode, setBuilderMode] = useState(false);
   const [builderKeywords, setBuilderKeywords] = useState('');
