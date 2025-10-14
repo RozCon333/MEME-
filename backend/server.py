@@ -169,7 +169,8 @@ async def generate_new_memes(request: GenerateMemeRequest):
     ).with_model("openai", "gpt-4o")
     
     # Generate memes
-    prompt = f"""Based on these words from existing memes: {', '.join(word_sample[:50])}
+    word_list = ', '.join(word_sample[:50])
+    prompt = f"""Based on these words from existing memes: {word_list}
 
 Generate {request.count} NEW adult humor meme texts. Each meme should be:
 - Short (1-3 lines max)
@@ -178,7 +179,7 @@ Generate {request.count} NEW adult humor meme texts. Each meme should be:
 - Creative combinations of concepts
 
 Format your response as a JSON array of objects with 'text' and 'source_words' (array of 3-5 relevant words used).
-Example: [{"text": "When you...", "source_words": ["word1", "word2", "word3"]}]
+Example: [{{"text": "When you...", "source_words": ["word1", "word2", "word3"]}}]
 
 Return ONLY the JSON array, no other text."""
     
