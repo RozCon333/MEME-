@@ -317,23 +317,23 @@ function App() {
             </TabsTrigger>
           </TabsList>
 
-          {/* Upload Tab */}
+          {/* Upload Tab - OPTIONAL */}
           <TabsContent value="upload">
             <Card className="bg-black/60 border-pink-500/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-pink-300">Upload Meme Images (NSFW)</CardTitle>
+                <CardTitle className="text-pink-300">📤 Upload Images (Optional)</CardTitle>
                 <CardDescription className="text-gray-400">
-                  Upload memes with text. Low-res OK! Auto-corrects OCR errors. Images without text auto-skipped.
+                  Upload your own images to use as backgrounds. Not required - you can use AI generation!
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="border-2 border-dashed border-pink-500/70 rounded-lg p-12 text-center hover:border-pink-400 transition-colors">
-                  <Upload className="w-16 h-16 mx-auto mb-4 text-pink-400" />
+                <div className="border-2 border-dashed border-pink-500/70 rounded-lg p-8 text-center hover:border-pink-400 transition-colors">
+                  <Upload className="w-12 h-12 mx-auto mb-3 text-pink-400" />
                   <label htmlFor="file-upload" className="cursor-pointer">
-                    <span className="text-xl text-pink-300 hover:text-pink-200 font-semibold">
-                      Click to upload or drag and drop
+                    <span className="text-lg text-pink-300 hover:text-pink-200 font-semibold">
+                      Click to upload images
                     </span>
-                    <p className="text-gray-500 mt-2">PNG, JPG, JPEG (Multiple files)</p>
+                    <p className="text-gray-500 mt-2">PNG, JPG, JPEG</p>
                   </label>
                   <input
                     id="file-upload"
@@ -343,190 +343,25 @@ function App() {
                     onChange={handleFileUpload}
                     className="hidden"
                     disabled={uploading}
-                    data-testid="file-upload-input"
                   />
                 </div>
                 
                 {uploading && (
                   <div className="text-center text-pink-400">
-                    <div className="animate-pulse">Processing images...</div>
+                    <div className="animate-pulse">Processing...</div>
                   </div>
                 )}
 
-                {/* Image Source Options */}
-                <div className="border border-pink-500/50 rounded-lg p-4 space-y-3">
-                  <Label className="text-pink-300 font-semibold text-lg">🖼️ Meme Background:</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <Button
-                      variant={imageMode === 'uploaded' ? 'default' : 'outline'}
-                      onClick={() => setImageMode('uploaded')}
-                      className={imageMode === 'uploaded' ? 'bg-pink-600' : 'border-pink-500/50'}
-                    >
-                      📤 Use Uploaded Images
-                    </Button>
-                    <Button
-                      variant={imageMode === 'auto-generate' ? 'default' : 'outline'}
-                      onClick={() => setImageMode('auto-generate')}
-                      className={imageMode === 'auto-generate' ? 'bg-pink-600' : 'border-pink-500/50'}
-                    >
-                      🎨 AI Auto-Generate
-                    </Button>
-                    <Button
-                      variant={imageMode === 'custom-prompt' ? 'default' : 'outline'}
-                      onClick={() => setImageMode('custom-prompt')}
-                      className={imageMode === 'custom-prompt' ? 'bg-pink-600' : 'border-pink-500/50'}
-                    >
-                      ✍️ Custom Prompt
-                    </Button>
+                {ocrResults.length > 0 && (
+                  <div className="text-center p-4 bg-pink-900/20 rounded-lg">
+                    <p className="text-pink-300 font-semibold">✅ {ocrResults.length} images uploaded!</p>
+                    <p className="text-gray-400 text-sm mt-1">These can be used as meme backgrounds</p>
                   </div>
-                  
-                  {imageMode === 'custom-prompt' && (
-                    <div className="mt-3">
-                      <Input
-                        value={customImagePrompt}
-                        onChange={(e) => setCustomImagePrompt(e.target.value)}
-                        placeholder="Describe your meme background... (e.g., 'funny abstract colorful pattern')"
-                        className="bg-black/40 text-white border-pink-500/50"
-                      />
-                    </div>
-                  )}
-                  
-                  <p className="text-xs text-gray-500">
-                    {imageMode === 'uploaded' && '✅ Uses your uploaded meme images'}
-                    {imageMode === 'auto-generate' && '🤖 AI creates backgrounds based on meme text'}
-                    {imageMode === 'custom-prompt' && '🎨 AI creates backgrounds from your description'}
-                  </p>
-                </div>
-
-                <div className="flex gap-4">
-                  <Button
-                    onClick={() => handleGenerateMemes()}
-                    disabled={generating || (imageMode === 'uploaded' && ocrResults.length === 0)}
-                    className="flex-1 bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-lg font-bold"
-                    data-testid="generate-memes-button"
-                  >
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    {generating ? 'Generating...' : 'Generate 4 NSFW Memes'}
-                  </Button>
-                  
-                  <Button
-                    onClick={startBuilder}
-                    disabled={ocrResults.length === 0}
-                    className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-lg font-bold"
-                  >
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    Meme Builder
-                  </Button>
-                  
-                  <Button
-                    onClick={handleClearData}
-                    variant="destructive"
-                    className="bg-red-600 hover:bg-red-700"
-                    data-testid="clear-data-button"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Clear All
-                  </Button>
-                </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
-
-          {/* OCR Results Tab */}
-          <TabsContent value="results">
-            <Card className="bg-black/60 border-pink-500/50 backdrop-blur-sm">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-pink-300">OCR Extraction Results (Auto-Corrected)</CardTitle>
-                  <CardDescription className="text-gray-400">
-                    Text extracted and auto-corrected. Click edit icon to manually adjust.
-                  </CardDescription>
-                </div>
-                <Button
-                  onClick={handleDownloadCSV}
-                  variant="outline"
-                  className="border-pink-500/50 hover:bg-pink-600"
-                  disabled={ocrResults.length === 0}
-                  data-testid="download-csv-button"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download CSV
-                </Button>
-              </CardHeader>
-              <CardContent>
-                {ocrResults.length === 0 ? (
-                  <div className="text-center py-12 text-gray-500">
-                    No data yet. Upload some memes to get started!
-                  </div>
-                ) : (
-                  <div className="border border-pink-500/50 rounded-lg overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-pink-900/30 border-pink-500/50">
-                          <TableHead className="text-pink-300">Filename</TableHead>
-                          <TableHead className="text-pink-300">Corrected Text</TableHead>
-                          <TableHead className="text-pink-300">Keywords</TableHead>
-                          <TableHead className="text-pink-300">Actions</TableHead>
-                          <TableHead className="text-pink-300">Preview</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {ocrResults.map((result, idx) => (
-                          <TableRow key={idx} className="border-pink-500/30" data-testid={`ocr-result-row-${idx}`}>
-                            <TableCell className="text-gray-300">{result.filename}</TableCell>
-                            <TableCell className="max-w-md">
-                              {editingId === result.id ? (
-                                <div className="flex gap-2">
-                                  <Input
-                                    value={editText}
-                                    onChange={(e) => setEditText(e.target.value)}
-                                    className="bg-black/40 text-white"
-                                  />
-                                  <Button size="sm" onClick={() => handleUpdateText(result.id)}>Save</Button>
-                                  <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>Cancel</Button>
-                                </div>
-                              ) : (
-                                <span className="text-gray-400">{result.corrected_text || result.extracted_text}</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex flex-wrap gap-1">
-                                {(result.keywords || []).slice(0, 5).map((kw, kidx) => (
-                                  <span
-                                    key={kidx}
-                                    className="text-xs bg-pink-700/70 text-pink-200 px-2 py-1 rounded font-bold"
-                                  >
-                                    {kw}
-                                  </span>
-                                ))}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => {
-                                  setEditingId(result.id);
-                                  setEditText(result.corrected_text || result.extracted_text);
-                                }}
-                                className="text-pink-400 hover:text-pink-300"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                            </TableCell>
-                            <TableCell>
-                              <img
-                                src={`data:image/png;base64,${result.image_data}`}
-                                alt={result.filename}
-                                className="w-16 h-16 object-cover rounded border border-pink-500/50"
-                              />
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
+        </Tabs>
               </CardContent>
             </Card>
           </TabsContent>
