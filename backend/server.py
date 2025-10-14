@@ -583,20 +583,14 @@ Return ONLY the JSON array."""
         
         generated_memes = []
         for idx, meme in enumerate(meme_data):
-            # Use one of the uploaded images
-            if idx < len(sample_images):
-                img_data = sample_images[idx]['image_data']
+            # Use generated or uploaded image
+            if idx < len(generated_images):
+                img_data = generated_images[idx]
             else:
-                img_data = sample_images[0]['image_data']
+                img_data = generated_images[0]
             
-            # Create text overlay on image
-            img_bytes = base64.b64decode(img_data)
-            image = Image.open(io.BytesIO(img_bytes))
-            
-            # For now, just use the original image
-            buffered = io.BytesIO()
-            image.save(buffered, format="PNG")
-            final_img_base64 = base64.b64encode(buffered.getvalue()).decode()
+            # Image is already base64
+            final_img_base64 = img_data
             
             # Determine pattern used
             pattern = "+".join(meme.get('source_words', [])[:3])
