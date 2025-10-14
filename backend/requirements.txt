@@ -42,6 +42,7 @@ httplib2==0.31.0
 httpx==0.28.1
 huggingface-hub==0.35.3
 idna==3.10
+imageio==2.37.0
 importlib_metadata==8.7.0
 iniconfig==2.1.0
 isort==6.1.0
@@ -51,6 +52,7 @@ jmespath==1.0.1
 jq==1.10.0
 jsonschema==4.25.1
 jsonschema-specifications==2025.9.1
+lazy_loader==0.4
 litellm==1.78.0
 markdown-it-py==4.0.0
 MarkupSafe==3.0.3
@@ -60,9 +62,11 @@ motor==3.3.1
 multidict==6.7.0
 mypy==1.18.2
 mypy_extensions==1.1.0
-numpy==2.3.3
+networkx==3.5
+numpy==2.2.6
 oauthlib==3.3.1
 openai==1.99.9
+opencv-python-headless==4.12.0.88
 packaging==25.0
 pandas==2.3.3
 passlib==1.7.4
@@ -102,12 +106,15 @@ rpds-py==0.27.1
 rsa==4.9.1
 s3transfer==0.14.0
 s5cmd==0.2.0
+scikit-image==0.25.2
+scipy==1.16.2
 shellingham==1.5.4
 six==1.17.0
 sniffio==1.3.1
 starlette==0.37.2
 stripe==13.0.1
 tenacity==9.1.2
+tifffile==2025.10.4
 tiktoken==0.12.0
 tokenizers==0.22.1
 tqdm==4.67.1
