@@ -399,10 +399,6 @@ function App() {
               </CardContent>
             </Card>
           </TabsContent>
-        </Tabs>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           {/* Meme Builder Tab - NOW FIRST! */}
           <TabsContent value="builder">
