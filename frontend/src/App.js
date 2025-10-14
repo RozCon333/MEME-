@@ -240,6 +240,7 @@ function App() {
                         <TableRow className="bg-purple-900/20 border-purple-500/30">
                           <TableHead className="text-purple-300">Filename</TableHead>
                           <TableHead className="text-purple-300">Extracted Text</TableHead>
+                          <TableHead className="text-purple-300">Keywords</TableHead>
                           <TableHead className="text-purple-300">Word Count</TableHead>
                           <TableHead className="text-purple-300">Preview</TableHead>
                         </TableRow>
