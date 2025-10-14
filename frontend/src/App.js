@@ -243,7 +243,7 @@ function App() {
       <div className="border-b-4 border-pink-500/50 bg-black/60 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-red-400 to-pink-500 drop-shadow-lg">
-            💋 MISS TITTY SPRINKLES<br/>FUCKING FUCKING FACTORY
+            🎭 FUNNY FACTORY
           </h1>
           <p className="text-pink-300 mt-3 text-lg font-bold">NSFW Meme Generator - Autocorrect, Tone Control & More!</p>
         </div>
