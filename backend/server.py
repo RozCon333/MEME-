@@ -485,6 +485,7 @@ Requirements:
 - Include sexual references and innuendos
 - Be {tone_description}
 - Follow style: {style_desc}
+- **MAXIMUM 3 SENTENCES** - keep it short and punchy!
 - Hilarious and inappropriate
 - Mix keywords creatively
 
