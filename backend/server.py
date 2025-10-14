@@ -374,7 +374,7 @@ Return ONLY the JSON array."""
         return {"generated": len(generated_memes), "memes": generated_memes}
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate memes: {str(e)}\")
+        raise HTTPException(status_code=500, detail=f"Failed to generate memes: {str(e)}")
 
 
 @api_router.get("/generated-memes")
