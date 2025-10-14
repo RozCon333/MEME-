@@ -44,10 +44,17 @@ class MemeOCR(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     filename: str
     extracted_text: str
-    keywords: List[str]  # New: extracted keywords
+    corrected_text: str  # Auto-corrected version
+    keywords: List[str]  # Extracted keywords
     word_count: int
     image_data: str  # base64 encoded
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ToneSettings(BaseModel):
+    naughty: int = 5  # 1-10
+    sexy: int = 5
+    funny: int = 5
+    rude: int = 5
 
 class GeneratedMeme(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -56,11 +63,22 @@ class GeneratedMeme(BaseModel):
     text: str
     image_data: str  # base64 encoded with overlay
     source_words: List[str]
-    keyword_pattern: str  # New: pattern used for generation
+    keyword_pattern: str
+    tone_used: ToneSettings
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class GenerateMemeRequest(BaseModel):
-    count: int = 5
+    count: int = 4  # Default 4 options
+    tone: Optional[ToneSettings] = None
+    keywords: Optional[List[str]] = None  # Custom keywords
+
+class GenerateSimilarRequest(BaseModel):
+    meme_id: str
+    tone: Optional[ToneSettings] = None
+
+class UpdateTextRequest(BaseModel):
+    id: str
+    corrected_text: str
 
 
 # Helper Functions for Image Processing and Keyword Extraction
