@@ -85,6 +85,15 @@ function App() {
     }
   };
 
+  const loadGeneratedMemes = async () => {
+    try {
+      const response = await axios.get(`${API}/generated-memes`);
+      setGeneratedMemes(response.data);
+    } catch (error) {
+      console.error('Failed to load generated memes:', error);
+    }
+  };
+
   const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files);
     if (files.length === 0) return;
