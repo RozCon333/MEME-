@@ -533,11 +533,33 @@ function App() {
                                   </span>
                                 ))}
                               </div>
+                              
+                              {/* Action Buttons */}
+                              <div className="grid grid-cols-2 gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleDownloadMeme(meme)}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  <Save className="w-3 h-3 mr-2" />
+                                  Save
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleDeleteMeme(meme.id)}
+                                  variant="destructive"
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  <Trash2 className="w-3 h-3 mr-2" />
+                                  Trash
+                                </Button>
+                              </div>
+                              
                               <Button
                                 size="sm"
                                 onClick={() => handleGenerateSimilar(meme.id)}
                                 disabled={generating}
-                                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                                className="w-full mt-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                               >
                                 <RefreshCw className="w-3 h-3 mr-2" />
                                 Generate 3 Similar
