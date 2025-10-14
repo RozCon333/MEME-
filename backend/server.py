@@ -15,6 +15,7 @@ import io
 import base64
 import pandas as pd
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+from emergentintegrations.llm.openai.image_generation import OpenAIImageGeneration
 import json
 import cv2
 import numpy as np
