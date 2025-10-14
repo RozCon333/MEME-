@@ -103,6 +103,28 @@ function App() {
     }
   };
 
+  const handleDeleteMeme = async (memeId) => {
+    if (!window.confirm('Trash this meme?')) return;
+    
+    try {
+      // Delete from backend
+      await axios.delete(`${API}/delete-meme/${memeId}`);
+      toast.success('Meme trashed!');
+      loadGeneratedMemes();
+    } catch (error) {
+      toast.error('Failed to delete meme');
+    }
+  };
+
+  const handleDownloadMeme = (meme) => {
+    // Create download link
+    const link = document.createElement('a');
+    link.href = `data:image/png;base64,${meme.image_data}`;
+    link.download = `meme-${meme.id}.png`;
+    link.click();
+    toast.success('Meme saved!');
+  };
+
   const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files);
     if (files.length === 0) return;
