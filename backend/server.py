@@ -419,9 +419,9 @@ async def generate_new_memes(request: GenerateMemeRequest):
     
     # BUILD STYLE-SPECIFIC INSTRUCTIONS
     length_instructions = {
-        "short": "1 line only, ultra concise",
-        "medium": "1-2 lines max",
-        "long": "2-3 lines, more detailed"
+        "short": "1 sentence only, ultra concise",
+        "medium": "1-2 sentences max",
+        "long": "2-3 sentences max, never more"
     }
     
     format_instructions = {
