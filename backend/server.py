@@ -537,13 +537,15 @@ Return ONLY the JSON array."""
                 image_data=final_img_base64,
                 source_words=meme.get('source_words', []),
                 keyword_pattern=pattern,
-                tone_used=tone
+                tone_used=tone,
+                style_used=style
             )
             
             # Save to database
             doc = generated_meme.model_dump()
             doc['timestamp'] = doc['timestamp'].isoformat()
             doc['tone_used'] = tone.model_dump()
+            doc['style_used'] = style.model_dump() if style else None
             await db.generated_memes.insert_one(doc)
             
             generated_memes.append({
