@@ -10,12 +10,16 @@ from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
 import pytesseract
-from PIL import Image
+from PIL import Image, ImageEnhance, ImageFilter
 import io
 import base64
 import pandas as pd
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 import json
+import cv2
+import numpy as np
+from collections import Counter
+import re
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
