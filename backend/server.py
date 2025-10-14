@@ -274,6 +274,32 @@ async def get_tone_presets():
     return {"presets": presets}
 
 
+@api_router.post("/generate-image")
+async def generate_custom_image(request: GenerateImageRequest):
+    """Generate custom meme background using AI"""
+    try:
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        image_gen = OpenAIImageGeneration(api_key=api_key)
+        
+        # Generate image
+        images = await image_gen.generate_images(
+            prompt=request.prompt,
+            model="gpt-image-1",
+            number_of_images=request.count
+        )
+        
+        # Convert to base64
+        result_images = []
+        for img_bytes in images:
+            img_base64 = base64.b64encode(img_bytes).decode('utf-8')
+            result_images.append(img_base64)
+        
+        return {"images": result_images, "count": len(result_images)}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Image generation failed: {str(e)}")
+
+
 @api_router.post("/upload-memes")
 async def upload_memes(files: List[UploadFile] = File(...)):
     """Upload multiple meme images and perform OCR with image enhancement"""
