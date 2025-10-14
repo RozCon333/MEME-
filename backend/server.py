@@ -265,46 +265,54 @@ async def download_csv():
 
 @api_router.post("/generate-new-memes")
 async def generate_new_memes(request: GenerateMemeRequest):
-    """Generate new adult humor memes using LLM"""
+    """Generate new NSFW adult humor memes using keyword algorithm"""
     
-    # Get all extracted texts
+    # Get all extracted data
     ocr_results = await db.meme_ocr.find({}, {"_id": 0}).to_list(1000)
     
     if not ocr_results:
         raise HTTPException(status_code=404, detail="No meme data available. Please upload memes first.")
     
-    # Collect all words
-    all_words = []
+    # COLLECT ALL KEYWORDS (including NSFW)
+    all_keywords = []
     for result in ocr_results:
-        words = result['extracted_text'].split()
-        all_words.extend(words)
+        all_keywords.extend(result.get('keywords', []))
     
-    # Create unique word list
-    unique_words = list(set(all_words))
-    word_sample = unique_words[:100]  # Sample for LLM
+    # Get unique keywords with frequency
+    keyword_counts = Counter(all_keywords)
+    top_keywords = [kw for kw, count in keyword_counts.most_common(30)]
     
-    # Initialize LLM chat
+    # Build keyword patterns
+    patterns = build_keyword_patterns(top_keywords)
+    
+    # Initialize LLM chat with EXPLICIT NSFW instructions
     api_key = os.environ.get('EMERGENT_LLM_KEY')
     chat = LlmChat(
         api_key=api_key,
         session_id=str(uuid.uuid4()),
-        system_message="You are a creative meme generator that creates adult humor memes. Be edgy, witty, and humorous."
+        system_message=\"\"\"You are an NSFW meme generator. Create EXPLICIT adult humor memes with sexual content. 
+Use profanity freely (fuck, shit, damn, etc.). 
+Include sexual references (sex, boobs, dick, ass, etc.).
+Be edgy, raunchy, and hilarious. No filters, no censorship.
+This is for adult entertainment only.\"\"\"
     ).with_model("openai", "gpt-4o")
     
-    # Generate memes
-    word_list = ', '.join(word_sample[:50])
-    prompt = f"""Based on these words from existing memes: {word_list}
+    # Generate memes with NSFW prompt
+    keyword_list = ', '.join(top_keywords[:25])
+    prompt = f\"\"\"Using these NSFW keywords: {keyword_list}
 
-Generate {request.count} NEW adult humor meme texts. Each meme should be:
-- Short (1-3 lines max)
-- Funny and edgy
-- Suitable for adult humor
-- Creative combinations of concepts
+Create {request.count} EXPLICIT NSFW adult humor meme texts. Requirements:
+- Use profanity freely (fuck, shit, damn, etc.)
+- Include sexual references and innuendos
+- Be raunchy and edgy
+- Short format (1-2 lines)
+- Hilarious and inappropriate
+- Mix keywords creatively
 
-Format your response as a JSON array of objects with 'text' and 'source_words' (array of 3-5 relevant words used).
-Example: [{{"text": "When you...", "source_words": ["word1", "word2", "word3"]}}]
+Format response as JSON array with 'text' and 'source_words' (3-5 keywords used):
+Example: [{{"text": "When you fuck up but your ass looks good", "source_words": ["fuck", "ass", "good"]}}]
 
-Return ONLY the JSON array, no other text."""
+Return ONLY the JSON array.\"\"\"
     
     user_message = UserMessage(text=prompt)
     response = await chat.send_message(user_message)
@@ -335,15 +343,19 @@ Return ONLY the JSON array, no other text."""
             img_bytes = base64.b64decode(img_data)
             image = Image.open(io.BytesIO(img_bytes))
             
-            # For now, just use the original image (text overlay requires additional setup)
+            # For now, just use the original image
             buffered = io.BytesIO()
             image.save(buffered, format="PNG")
             final_img_base64 = base64.b64encode(buffered.getvalue()).decode()
             
+            # Determine pattern used
+            pattern = "+".join(meme.get('source_words', [])[:3])
+            
             generated_meme = GeneratedMeme(
                 text=meme['text'],
                 image_data=final_img_base64,
-                source_words=meme.get('source_words', [])
+                source_words=meme.get('source_words', []),
+                keyword_pattern=pattern
             )
             
             # Save to database
@@ -355,13 +367,14 @@ Return ONLY the JSON array, no other text."""
                 "id": generated_meme.id,
                 "text": generated_meme.text,
                 "image_data": final_img_base64,
-                "source_words": generated_meme.source_words
+                "source_words": generated_meme.source_words,
+                "pattern": pattern
             })
         
         return {"generated": len(generated_memes), "memes": generated_memes}
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate memes: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate memes: {str(e)}\")
 
 
 @api_router.get("/generated-memes")
