@@ -404,7 +404,7 @@ function App() {
                 <div className="flex gap-4">
                   <Button
                     onClick={() => handleGenerateMemes()}
-                    disabled={generating || ocrResults.length === 0}
+                    disabled={generating || (imageMode === 'uploaded' && ocrResults.length === 0)}
                     className="flex-1 bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-lg font-bold"
                     data-testid="generate-memes-button"
                   >
