@@ -186,11 +186,11 @@ function App() {
                   <Button
                     onClick={handleGenerateMemes}
                     disabled={generating || ocrResults.length === 0}
-                    className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    className="flex-1 bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700"
                     data-testid="generate-memes-button"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
-                    {generating ? 'Generating...' : 'Generate New Memes'}
+                    {generating ? 'Generating NSFW...' : 'Generate NSFW Memes'}
                   </Button>
                   
                   <Button
