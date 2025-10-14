@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, UploadFile, File, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,10 +6,16 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
-
+import pytesseract
+from PIL import Image
+import io
+import base64
+import pandas as pd
+from emergentintegrations.llm.chat import LlmChat, UserMessage
+import json
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -27,44 +33,233 @@ api_router = APIRouter(prefix="/api")
 
 
 # Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
+class MemeOCR(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
+    filename: str
+    extracted_text: str
+    word_count: int
+    image_data: str  # base64 encoded
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+class GeneratedMeme(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    text: str
+    image_data: str  # base64 encoded with overlay
+    source_words: List[str]
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-# Add your routes to the router instead of directly to app
+class GenerateMemeRequest(BaseModel):
+    count: int = 5
+
+
+# Routes
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Meme OCR & Generator API"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
+@api_router.post("/upload-memes")
+async def upload_memes(files: List[UploadFile] = File(...)):
+    """Upload multiple meme images and perform OCR"""
+    results = []
     
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
+    for file in files:
+        try:
+            # Read image
+            contents = await file.read()
+            image = Image.open(io.BytesIO(contents))
+            
+            # Perform OCR
+            extracted_text = pytesseract.image_to_string(image)
+            word_count = len(extracted_text.split())
+            
+            # Convert image to base64
+            buffered = io.BytesIO()
+            image.save(buffered, format="PNG")
+            img_base64 = base64.b64encode(buffered.getvalue()).decode()
+            
+            # Create meme OCR object
+            meme_ocr = MemeOCR(
+                filename=file.filename,
+                extracted_text=extracted_text.strip(),
+                word_count=word_count,
+                image_data=img_base64
+            )
+            
+            # Save to database
+            doc = meme_ocr.model_dump()
+            doc['timestamp'] = doc['timestamp'].isoformat()
+            await db.meme_ocr.insert_one(doc)
+            
+            results.append({
+                "filename": file.filename,
+                "extracted_text": extracted_text.strip(),
+                "word_count": word_count,
+                "status": "success"
+            })
+            
+        except Exception as e:
+            results.append({
+                "filename": file.filename,
+                "error": str(e),
+                "status": "failed"
+            })
     
-    return status_checks
+    return {"uploaded": len(files), "results": results}
+
+
+@api_router.get("/ocr-results")
+async def get_ocr_results():
+    """Get all OCR results"""
+    results = await db.meme_ocr.find({}, {"_id": 0}).to_list(1000)
+    
+    # Convert ISO timestamps back
+    for result in results:
+        if isinstance(result['timestamp'], str):
+            result['timestamp'] = datetime.fromisoformat(result['timestamp'])
+    
+    return results
+
+
+@api_router.get("/download-csv")
+async def download_csv():
+    """Download OCR results as CSV"""
+    results = await db.meme_ocr.find({}, {"_id": 0, "image_data": 0}).to_list(1000)
+    
+    if not results:
+        raise HTTPException(status_code=404, detail="No data available")
+    
+    # Create DataFrame
+    df = pd.DataFrame(results)
+    csv_data = df.to_csv(index=False)
+    
+    return {"csv": csv_data}
+
+
+@api_router.post("/generate-new-memes")
+async def generate_new_memes(request: GenerateMemeRequest):
+    """Generate new adult humor memes using LLM"""
+    
+    # Get all extracted texts
+    ocr_results = await db.meme_ocr.find({}, {"_id": 0}).to_list(1000)
+    
+    if not ocr_results:
+        raise HTTPException(status_code=404, detail="No meme data available. Please upload memes first.")
+    
+    # Collect all words
+    all_words = []
+    for result in ocr_results:
+        words = result['extracted_text'].split()
+        all_words.extend(words)
+    
+    # Create unique word list
+    unique_words = list(set(all_words))
+    word_sample = unique_words[:100]  # Sample for LLM
+    
+    # Initialize LLM chat
+    api_key = os.environ.get('EMERGENT_LLM_KEY')
+    chat = LlmChat(
+        api_key=api_key,
+        session_id=str(uuid.uuid4()),
+        system_message="You are a creative meme generator that creates adult humor memes. Be edgy, witty, and humorous."
+    ).with_model("openai", "gpt-4o")
+    
+    # Generate memes
+    prompt = f"""Based on these words from existing memes: {', '.join(word_sample[:50])}
+
+Generate {request.count} NEW adult humor meme texts. Each meme should be:
+- Short (1-3 lines max)
+- Funny and edgy
+- Suitable for adult humor
+- Creative combinations of concepts
+
+Format your response as a JSON array of objects with 'text' and 'source_words' (array of 3-5 relevant words used).
+Example: [{"text": "When you...", "source_words": ["word1", "word2", "word3"]}]
+
+Return ONLY the JSON array, no other text."""
+    
+    user_message = UserMessage(text=prompt)
+    response = await chat.send_message(user_message)
+    
+    # Parse LLM response
+    try:
+        # Clean response
+        response_text = response.strip()
+        if response_text.startswith("```json"):
+            response_text = response_text[7:-3]
+        elif response_text.startswith("```"):
+            response_text = response_text[3:-3]
+        
+        meme_data = json.loads(response_text)
+        
+        # Get random images from uploaded memes for overlay
+        sample_images = await db.meme_ocr.find({}, {"_id": 0, "image_data": 1}).to_list(request.count)
+        
+        generated_memes = []
+        for idx, meme in enumerate(meme_data):
+            # Use one of the uploaded images
+            if idx < len(sample_images):
+                img_data = sample_images[idx]['image_data']
+            else:
+                img_data = sample_images[0]['image_data']
+            
+            # Create text overlay on image
+            img_bytes = base64.b64decode(img_data)
+            image = Image.open(io.BytesIO(img_bytes))
+            
+            # For now, just use the original image (text overlay requires additional setup)
+            buffered = io.BytesIO()
+            image.save(buffered, format="PNG")
+            final_img_base64 = base64.b64encode(buffered.getvalue()).decode()
+            
+            generated_meme = GeneratedMeme(
+                text=meme['text'],
+                image_data=final_img_base64,
+                source_words=meme.get('source_words', [])
+            )
+            
+            # Save to database
+            doc = generated_meme.model_dump()
+            doc['timestamp'] = doc['timestamp'].isoformat()
+            await db.generated_memes.insert_one(doc)
+            
+            generated_memes.append({
+                "id": generated_meme.id,
+                "text": generated_meme.text,
+                "image_data": final_img_base64,
+                "source_words": generated_meme.source_words
+            })
+        
+        return {"generated": len(generated_memes), "memes": generated_memes}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate memes: {str(e)}")
+
+
+@api_router.get("/generated-memes")
+async def get_generated_memes():
+    """Get all generated memes"""
+    memes = await db.generated_memes.find({}, {"_id": 0}).to_list(1000)
+    
+    # Convert ISO timestamps back
+    for meme in memes:
+        if isinstance(meme['timestamp'], str):
+            meme['timestamp'] = datetime.fromisoformat(meme['timestamp'])
+    
+    return memes
+
+
+@api_router.delete("/clear-data")
+async def clear_data():
+    """Clear all data"""
+    await db.meme_ocr.delete_many({})
+    await db.generated_memes.delete_many({})
+    return {"message": "All data cleared"}
+
 
 # Include the router in the main app
 app.include_router(api_router)
