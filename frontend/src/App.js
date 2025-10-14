@@ -133,8 +133,8 @@ function App() {
   };
 
   const handleGenerateMemes = async (keywords = null) => {
-    if (!keywords && ocrResults.length === 0) {
-      toast.error('Please upload memes first!');
+    if (!keywords && ocrResults.length === 0 && imageMode === 'uploaded') {
+      toast.error('Please upload memes first or choose AI image generation!');
       return;
     }
 
@@ -144,7 +144,9 @@ function App() {
         count: 4,
         tone: { naughty, sexy, funny, rude },
         style: { length: memeLength, format: memeFormat },
-        keywords: keywords ? keywords.split(',').map(k => k.trim()) : null
+        keywords: keywords ? keywords.split(',').map(k => k.trim()) : null,
+        generate_images: imageMode === 'auto-generate' || imageMode === 'custom-prompt',
+        custom_prompt: imageMode === 'custom-prompt' ? customImagePrompt : null
       };
       
       const response = await axios.post(`${API}/generate-new-memes`, payload);
