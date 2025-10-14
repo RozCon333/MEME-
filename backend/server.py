@@ -261,6 +261,7 @@ async def upload_memes(files: List[UploadFile] = File(...)):
             meme_ocr = MemeOCR(
                 filename=file.filename,
                 extracted_text=extracted_text,
+                corrected_text=corrected_text,
                 keywords=keywords,
                 word_count=word_count,
                 image_data=img_base64
