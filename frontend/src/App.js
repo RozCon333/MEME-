@@ -262,9 +262,17 @@ function App() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Tone Controls */}
         <Card className="bg-black/60 border-pink-500/50 backdrop-blur-sm mb-6">
-          <CardHeader>
-            <CardTitle className="text-pink-300 text-xl">🎚️ Tone Controls</CardTitle>
-            <CardDescription className="text-gray-400">Adjust the vibe of your generated memes</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-pink-300 text-xl">🎚️ Tone Controls</CardTitle>
+              <CardDescription className="text-gray-400">Adjust the vibe of your generated memes</CardDescription>
+            </div>
+            <Button
+              onClick={randomizeTone}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            >
+              🎲 RANDOMIZE
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
