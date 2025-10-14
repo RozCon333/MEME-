@@ -122,10 +122,10 @@ function App() {
       {/* Header */}
       <div className="border-b border-purple-500/20 bg-black/30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-            Meme OCR & Generator
+          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-red-400 to-purple-400">
+            🔞 NSFW Meme OCR & Generator
           </h1>
-          <p className="text-gray-400 mt-2">Upload memes, extract text, and generate new adult humor content</p>
+          <p className="text-gray-400 mt-2">Upload memes, extract keywords, and generate EXPLICIT adult humor content</p>
         </div>
       </div>
 
