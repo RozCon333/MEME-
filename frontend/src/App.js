@@ -256,7 +256,7 @@ function App() {
           <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-red-400 to-pink-500 drop-shadow-lg">
             💋 MISS TITTY SPRINKLES<br/>FUNNY FUCKING FACTORY
           </h1>
-          <p className="text-pink-300 mt-3 text-lg font-bold">NSFW Meme Generator - Autocorrect, Tone Control & More!</p>
+          <p className="text-pink-300 mt-3 text-lg font-bold">TEXT-ONLY AI Meme Generator - Upload Images, AI Writes Hilarious Text!</p>
         </div>
       </div>
 
