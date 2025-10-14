@@ -130,6 +130,7 @@ function App() {
       const payload = {
         count: 4,
         tone: { naughty, sexy, funny, rude },
+        style: { length: memeLength, format: memeFormat },
         keywords: keywords ? keywords.split(',').map(k => k.trim()) : null
       };
       
