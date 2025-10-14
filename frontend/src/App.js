@@ -286,9 +286,9 @@ function App() {
           <TabsContent value="generated">
             <Card className="bg-black/40 border-purple-500/30 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-purple-300">AI-Generated Memes</CardTitle>
+                <CardTitle className="text-purple-300">🔥 AI-Generated NSFW Memes</CardTitle>
                 <CardDescription className="text-gray-400">
-                  New adult humor memes created from extracted text patterns
+                  Explicit adult humor memes created from keyword patterns (profanity included!)
                 </CardDescription>
               </CardHeader>
               <CardContent>
