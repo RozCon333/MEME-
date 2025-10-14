@@ -56,6 +56,18 @@ class ToneSettings(BaseModel):
     funny: int = 5
     rude: int = 5
 
+class TonePreset(BaseModel):
+    name: str
+    naughty: int
+    sexy: int
+    funny: int
+    rude: int
+    description: str
+
+class MemeStyle(BaseModel):
+    length: str = "short"  # short, medium, long
+    format: str = "statement"  # statement, question, observation, setup_punchline
+
 class GeneratedMeme(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
@@ -65,11 +77,13 @@ class GeneratedMeme(BaseModel):
     source_words: List[str]
     keyword_pattern: str
     tone_used: ToneSettings
+    style_used: Optional[MemeStyle] = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class GenerateMemeRequest(BaseModel):
     count: int = 4  # Default 4 options
     tone: Optional[ToneSettings] = None
+    style: Optional[MemeStyle] = None
     keywords: Optional[List[str]] = None  # Custom keywords
 
 class GenerateSimilarRequest(BaseModel):
