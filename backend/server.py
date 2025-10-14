@@ -86,6 +86,8 @@ class GenerateMemeRequest(BaseModel):
     tone: Optional[ToneSettings] = None
     style: Optional[MemeStyle] = None
     keywords: Optional[List[str]] = None  # Custom keywords
+    generate_images: bool = False  # Auto-generate backgrounds
+    custom_prompt: Optional[str] = None  # Custom image prompt
 
 class GenerateSimilarRequest(BaseModel):
     meme_id: str
@@ -94,6 +96,10 @@ class GenerateSimilarRequest(BaseModel):
 class UpdateTextRequest(BaseModel):
     id: str
     corrected_text: str
+
+class GenerateImageRequest(BaseModel):
+    prompt: str
+    count: int = 1
 
 
 # Helper Functions for Image Processing and Keyword Extraction
