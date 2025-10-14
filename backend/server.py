@@ -83,6 +83,46 @@ class UpdateTextRequest(BaseModel):
 
 # Helper Functions for Image Processing and Keyword Extraction
 
+# Initialize spell checker
+spell = SpellChecker()
+
+def auto_correct_text(text):
+    """Auto-correct obvious OCR mistakes"""
+    words = text.split()
+    corrected_words = []
+    
+    for word in words:
+        # Keep short words and numbers as-is
+        if len(word) <= 2 or word.isdigit():
+            corrected_words.append(word)
+            continue
+        
+        # Clean word
+        clean_word = re.sub(r'[^a-zA-Z]', '', word.lower())
+        
+        if not clean_word:
+            corrected_words.append(word)
+            continue
+        
+        # Check if misspelled (but keep NSFW words!)
+        nsfw_words = ['fuck', 'shit', 'damn', 'sex', 'boobs', 'ass', 'dick', 'bitch', 'pussy', 'cock']
+        if clean_word in nsfw_words:
+            corrected_words.append(word)
+        elif spell.unknown([clean_word]):
+            # Get correction
+            correction = spell.correction(clean_word)
+            if correction and correction != clean_word:
+                # Preserve original capitalization
+                if word[0].isupper():
+                    correction = correction.capitalize()
+                corrected_words.append(correction)
+            else:
+                corrected_words.append(word)
+        else:
+            corrected_words.append(word)
+    
+    return ' '.join(corrected_words)
+
 def preprocess_image_for_ocr(image):
     """Enhance low-res images for better OCR"""
     # Convert PIL to numpy array
