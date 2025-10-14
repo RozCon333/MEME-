@@ -299,7 +299,7 @@ This is for adult entertainment only."""
     
     # Generate memes with NSFW prompt
     keyword_list = ', '.join(top_keywords[:25])
-    prompt = f\"\"\"Using these NSFW keywords: {keyword_list}
+    prompt = f"""Using these NSFW keywords: {keyword_list}
 
 Create {request.count} EXPLICIT NSFW adult humor meme texts. Requirements:
 - Use profanity freely (fuck, shit, damn, etc.)
@@ -312,7 +312,7 @@ Create {request.count} EXPLICIT NSFW adult humor meme texts. Requirements:
 Format response as JSON array with 'text' and 'source_words' (3-5 keywords used):
 Example: [{{"text": "When you fuck up but your ass looks good", "source_words": ["fuck", "ass", "good"]}}]
 
-Return ONLY the JSON array.\"\"\"
+Return ONLY the JSON array."""
     
     user_message = UserMessage(text=prompt)
     response = await chat.send_message(user_message)
