@@ -64,12 +64,24 @@ function App() {
     }
   };
 
-  const loadGeneratedMemes = async () => {
+  const loadTonePresets = async () => {
     try {
-      const response = await axios.get(`${API}/generated-memes`);
-      setGeneratedMemes(response.data);
+      const response = await axios.get(`${API}/tone-presets`);
+      setTonePresets(response.data.presets);
     } catch (error) {
-      console.error('Failed to load generated memes:', error);
+      console.error('Failed to load tone presets:', error);
+    }
+  };
+
+  const applyTonePreset = (presetName) => {
+    const preset = tonePresets.find(p => p.name === presetName);
+    if (preset) {
+      setNaughty(preset.naughty);
+      setSexy(preset.sexy);
+      setFunny(preset.funny);
+      setRude(preset.rude);
+      setSelectedPreset(presetName);
+      toast.success(`Applied: ${preset.name}! ${preset.description}`);
     }
   };
 
