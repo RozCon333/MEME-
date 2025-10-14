@@ -252,6 +252,18 @@ function App() {
                             <TableCell className="text-gray-400 max-w-md truncate">
                               {result.extracted_text || 'No text found'}
                             </TableCell>
+                            <TableCell>
+                              <div className="flex flex-wrap gap-1">
+                                {(result.keywords || []).slice(0, 5).map((kw, kidx) => (
+                                  <span
+                                    key={kidx}
+                                    className="text-xs bg-pink-700/50 text-pink-200 px-2 py-1 rounded font-semibold"
+                                  >
+                                    {kw}
+                                  </span>
+                                ))}
+                              </div>
+                            </TableCell>
                             <TableCell className="text-gray-300">{result.word_count}</TableCell>
                             <TableCell>
                               <img
