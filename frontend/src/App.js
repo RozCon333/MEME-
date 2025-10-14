@@ -9,6 +9,8 @@ import { Upload, Download, Sparkles, Trash2, RefreshCw, Edit } from 'lucide-reac
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Toaster } from '@/components/ui/sonner';
 
