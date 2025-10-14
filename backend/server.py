@@ -414,6 +414,25 @@ async def generate_new_memes(request: GenerateMemeRequest):
     # Get tone settings (default to 5 if not provided)
     tone = request.tone if request.tone else ToneSettings()
     
+    # Get style settings
+    style = request.style if request.style else MemeStyle()
+    
+    # BUILD STYLE-SPECIFIC INSTRUCTIONS
+    length_instructions = {
+        "short": "1 line only, ultra concise",
+        "medium": "1-2 lines max",
+        "long": "2-3 lines, more detailed"
+    }
+    
+    format_instructions = {
+        "statement": "Make bold statements",
+        "question": "Phrase as rhetorical questions",
+        "observation": "Start with 'When...', 'That moment when...', 'POV:', etc.",
+        "setup_punchline": "Two-part: setup then punchline"
+    }
+    
+    style_desc = f"{length_instructions[style.length]}. {format_instructions[style.format]}."
+    
     # BUILD TONE-SPECIFIC PROMPT
     tone_descriptors = []
     if tone.naughty >= 7:
