@@ -99,8 +99,8 @@ def preprocess_image_for_ocr(image):
 
 
 def extract_keywords(text, min_length=3, max_keywords=10):
-    """Extract meaningful keywords from text"""
-    # Common words to ignore
+    """Extract meaningful keywords from text - KEEPS NSFW WORDS"""
+    # Common words to ignore (REMOVED NSFW words - we WANT to keep those!)
     stop_words = {
         'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
         'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
@@ -109,11 +109,11 @@ def extract_keywords(text, min_length=3, max_keywords=10):
         'it', 'its', 'i', 'you', 'he', 'she', 'we', 'they', 'them', 'their'
     }
     
-    # Clean and tokenize
+    # Clean and tokenize (keep NSFW words!)
     text = text.lower()
     words = re.findall(r'\b[a-z]+\b', text)
     
-    # Filter words
+    # Filter words - KEEP explicit content
     keywords = [
         word for word in words 
         if len(word) >= min_length and word not in stop_words
