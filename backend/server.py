@@ -275,6 +275,7 @@ async def upload_memes(files: List[UploadFile] = File(...)):
             results.append({
                 "filename": file.filename,
                 "extracted_text": extracted_text,
+                "corrected_text": corrected_text,
                 "keywords": keywords,
                 "word_count": word_count,
                 "status": "success"
