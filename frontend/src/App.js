@@ -85,6 +85,15 @@ function App() {
     }
   };
 
+  const randomizeTone = () => {
+    setNaughty(Math.floor(Math.random() * 10) + 1);
+    setSexy(Math.floor(Math.random() * 10) + 1);
+    setFunny(Math.floor(Math.random() * 10) + 1);
+    setRude(Math.floor(Math.random() * 10) + 1);
+    setSelectedPreset('');
+    toast.success('🎲 Randomized! Let\'s see what happens!');
+  };
+
   const loadGeneratedMemes = async () => {
     try {
       const response = await axios.get(`${API}/generated-memes`);
