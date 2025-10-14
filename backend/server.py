@@ -494,6 +494,57 @@ async def get_generated_memes():
     return memes
 
 
+@api_router.post("/generate-similar")
+async def generate_similar(request: GenerateSimilarRequest):
+    """Generate 3 similar variations of an existing meme"""
+    
+    # Find the original meme
+    original = await db.generated_memes.find_one({"id": request.meme_id}, {"_id": 0})
+    
+    if not original:
+        raise HTTPException(status_code=404, detail="Meme not found")
+    
+    # Use provided tone or original tone
+    tone = request.tone if request.tone else ToneSettings(**original.get('tone_used', {}))
+    
+    # Get source keywords
+    source_keywords = original.get('source_words', [])
+    
+    # Generate 3 similar memes
+    gen_request = GenerateMemeRequest(
+        count=3,
+        tone=tone,
+        keywords=source_keywords
+    )
+    
+    result = await generate_new_memes(gen_request)
+    return {"similar_memes": result["memes"]}
+
+
+@api_router.put("/update-text")
+async def update_text(request: UpdateTextRequest):
+    """Update corrected text for an OCR result"""
+    
+    # Update in database
+    result = await db.meme_ocr.update_one(
+        {"id": request.id},
+        {"$set": {"corrected_text": request.corrected_text}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Meme not found")
+    
+    # Re-extract keywords from corrected text
+    keywords = extract_keywords(request.corrected_text, min_length=3, max_keywords=15)
+    
+    await db.meme_ocr.update_one(
+        {"id": request.id},
+        {"$set": {"keywords": keywords}}
+    )
+    
+    return {"success": True, "updated_keywords": keywords}
+
+
 @api_router.delete("/clear-data")
 async def clear_data():
     """Clear all data"""
