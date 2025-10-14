@@ -304,19 +304,16 @@ function App() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-black/60 border border-pink-500/50">
-            <TabsTrigger value="upload" className="data-[state=active]:bg-pink-600">
-              <Upload className="w-4 h-4 mr-2" />
-              Upload
-            </TabsTrigger>
-            <TabsTrigger value="results" className="data-[state=active]:bg-pink-600">
-              OCR Results ({ocrResults.length})
-            </TabsTrigger>
             <TabsTrigger value="builder" className="data-[state=active]:bg-pink-600">
               <Sparkles className="w-4 h-4 mr-2" />
               Meme Builder
             </TabsTrigger>
             <TabsTrigger value="generated" className="data-[state=active]:bg-pink-600">
               Generated ({generatedMemes.length})
+            </TabsTrigger>
+            <TabsTrigger value="upload" className="data-[state=active]:bg-pink-600">
+              <Upload className="w-4 h-4 mr-2" />
+              Upload (Optional)
             </TabsTrigger>
           </TabsList>
 
