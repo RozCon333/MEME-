@@ -290,11 +290,11 @@ async def generate_new_memes(request: GenerateMemeRequest):
     chat = LlmChat(
         api_key=api_key,
         session_id=str(uuid.uuid4()),
-        system_message=\"\"\"You are an NSFW meme generator. Create EXPLICIT adult humor memes with sexual content. 
+        system_message="""You are an NSFW meme generator. Create EXPLICIT adult humor memes with sexual content. 
 Use profanity freely (fuck, shit, damn, etc.). 
 Include sexual references (sex, boobs, dick, ass, etc.).
 Be edgy, raunchy, and hilarious. No filters, no censorship.
-This is for adult entertainment only.\"\"\"
+This is for adult entertainment only."""
     ).with_model("openai", "gpt-4o")
     
     # Generate memes with NSFW prompt
