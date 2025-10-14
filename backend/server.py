@@ -20,6 +20,7 @@ import cv2
 import numpy as np
 from collections import Counter
 import re
+from spellchecker import SpellChecker
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
