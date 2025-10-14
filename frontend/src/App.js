@@ -307,16 +307,19 @@ function App() {
                             className="w-full h-48 object-cover rounded mb-4 border border-purple-500/30"
                           />
                           <div className="space-y-2">
-                            <p className="text-white font-medium">{meme.text}</p>
-                            <div className="flex flex-wrap gap-1">
-                              {meme.source_words.map((word, widx) => (
-                                <span
-                                  key={widx}
-                                  className="text-xs bg-purple-700/50 text-purple-200 px-2 py-1 rounded"
-                                >
-                                  {word}
-                                </span>
-                              ))}
+                            <p className="text-white font-medium text-sm leading-relaxed">{meme.text}</p>
+                            <div className="border-t border-purple-500/30 pt-2">
+                              <p className="text-xs text-purple-300 mb-1">Keywords Used:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {meme.source_words.map((word, widx) => (
+                                  <span
+                                    key={widx}
+                                    className="text-xs bg-pink-700/70 text-pink-200 px-2 py-1 rounded font-bold"
+                                  >
+                                    {word}
+                                  </span>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         </CardContent>
