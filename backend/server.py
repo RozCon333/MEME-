@@ -172,25 +172,35 @@ def preprocess_image_for_ocr(image):
 
 
 def extract_keywords(text, min_length=3, max_keywords=10):
-    """Extract meaningful keywords from text - KEEPS NSFW WORDS"""
-    # Common words to ignore (REMOVED NSFW words - we WANT to keep those!)
+    """Extract meaningful keywords from text - KEEPS NSFW WORDS, FILTERS GARBAGE"""
+    # Common words to ignore
     stop_words = {
         'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
         'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
         'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
         'should', 'could', 'may', 'might', 'must', 'can', 'that', 'this',
-        'it', 'its', 'i', 'you', 'he', 'she', 'we', 'they', 'them', 'their'
+        'it', 'its', 'i', 'you', 'he', 'she', 'we', 'they', 'them', 'their',
+        'when', 'where', 'who', 'what', 'why', 'how', 'your', 'my', 'our'
     }
     
     # Clean and tokenize (keep NSFW words!)
     text = text.lower()
     words = re.findall(r'\b[a-z]+\b', text)
     
-    # Filter words - KEEP explicit content
-    keywords = [
-        word for word in words 
-        if len(word) >= min_length and word not in stop_words
-    ]
+    # Filter words - KEEP explicit content, REMOVE garbage OCR
+    keywords = []
+    for word in words:
+        if len(word) < min_length or word in stop_words:
+            continue
+        
+        # ALWAYS keep NSFW words
+        if word in NSFW_WHITELIST:
+            keywords.append(word)
+            continue
+        
+        # Check if it's a real word (filter garbage OCR)
+        if not spell.unknown([word]):
+            keywords.append(word)
     
     # Get most frequent keywords
     word_counts = Counter(keywords)
