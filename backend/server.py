@@ -14,8 +14,31 @@ from PIL import Image, ImageEnhance, ImageFilter
 import io
 import base64
 import pandas as pd
-from emergentintegrations.llm.chat import LlmChat, UserMessage
-from emergentintegrations.llm.openai.image_generation import OpenAIImageGeneration
+# from emergentintegrations.llm.openai.image_generation import OpenAIImageGeneration
+import openai
+# --- Load environment variables ---
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / ".env")
+
+# --- MongoDB setup ---
+mongo_url = os.getenv("MONGO_URL")
+client = AsyncIOMotorClient(mongo_url)
+db = client["MEME"]  # 👈 use your actual database name here
+
+class OpenAIImageGeneration:
+    def __init__(self, api_key=None):
+        openai.api_key = api_key or os.getenv("EMERGENT_LLM_KEY")
+
+    async def generate(self, prompt: str):
+        try:
+            response = openai.images.generate(
+                model="gpt-image-1",
+                prompt=prompt,
+                size="1024x1024"
+            )
+            return {"url": response.data[0].url}
+        except Exception as e:
+            return {"error": str(e)}
 import json
 import cv2
 import numpy as np
