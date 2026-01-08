@@ -532,6 +532,7 @@ Requirements:
 - **MAXIMUM 3 SENTENCES** - keep it short and punchy!
 - Hilarious and inappropriate
 - Mix keywords creatively
+- Deliver the humor with a deadpan, effortless delivery. Don't over-explain the joke or use excessive exclamation points.
 
 Format response as JSON array with 'text' and 'source_words' (3-5 keywords used):
 Example: [{{"text": "When you fuck up but your ass looks good", "source_words": ["fuck", "ass", "good"]}}]
