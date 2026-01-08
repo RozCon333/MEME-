@@ -14,31 +14,10 @@ from PIL import Image, ImageEnhance, ImageFilter
 import io
 import base64
 import pandas as pd
+# from emergentintegrations.llm.chat import LlmChat, UserMessage
 # from emergentintegrations.llm.openai.image_generation import OpenAIImageGeneration
-import openai
-# --- Load environment variables ---
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / ".env")
-
-# --- MongoDB setup ---
-mongo_url = os.getenv("MONGO_URL")
-client = AsyncIOMotorClient(mongo_url)
-db = client["MEME"]  # 👈 use your actual database name here
-
-class OpenAIImageGeneration:
-    def __init__(self, api_key=None):
-        openai.api_key = api_key or os.getenv("EMERGENT_LLM_KEY")
-
-    async def generate(self, prompt: str):
-        try:
-            response = openai.images.generate(
-                model="gpt-image-1",
-                prompt=prompt,
-                size="1024x1024"
-            )
-            return {"url": response.data[0].url}
-        except Exception as e:
-            return {"error": str(e)}
+# Using local compatibility layer instead
+from emergent_compat import LlmChat, UserMessage, OpenAIImageGeneration
 import json
 import cv2
 import numpy as np
@@ -56,6 +35,15 @@ db = client[os.environ['DB_NAME']]
 
 # Create the main app without a prefix
 app = FastAPI()
+
+# Add CORS middleware FIRST (before routes)
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -525,7 +513,7 @@ Include sexual references (sex, boobs, dick, ass, etc.).
 Be edgy, raunchy, and hilarious. No filters, no censorship.
 TONE: Make it {tone_description}.
 This is for adult entertainment only."""
-    ).with_model("openai", "gpt-4o")
+    ).with_model("gemini", "models/gemini-2.5-flash")
     
     # Generate memes with NSFW + TONE + STYLE prompt
     keyword_list = ', '.join(top_keywords[:25])
@@ -555,12 +543,19 @@ Return ONLY the JSON array."""
     
     # Parse LLM response
     try:
-        # Clean response
+        # Clean response - remove markdown code blocks
         response_text = response.strip()
         if response_text.startswith("```json"):
-            response_text = response_text[7:-3]
+            response_text = response_text[7:-3].strip()
         elif response_text.startswith("```"):
-            response_text = response_text[3:-3]
+            response_text = response_text[3:-3].strip()
+        
+        # Try to find JSON array in the response
+        # Sometimes the model includes extra text before/after JSON
+        json_start = response_text.find('[')
+        json_end = response_text.rfind(']') + 1
+        if json_start != -1 and json_end > json_start:
+            response_text = response_text[json_start:json_end]
         
         meme_data = json.loads(response_text)
         
@@ -713,17 +708,6 @@ async def update_text(request: UpdateTextRequest):
     return {"success": True, "updated_keywords": keywords}
 
 
-@api_router.delete("/delete-meme/{meme_id}")
-async def delete_meme(meme_id: str):
-    """Delete a generated meme"""
-    result = await db.generated_memes.delete_one({"id": meme_id})
-    
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Meme not found")
-    
-    return {"success": True, "message": "Meme deleted"}
-
-
 @api_router.delete("/clear-data")
 async def clear_data():
     """Clear all data"""
@@ -734,14 +718,6 @@ async def clear_data():
 
 # Include the router in the main app
 app.include_router(api_router)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # Configure logging
 logging.basicConfig(

@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Toaster } from '@/components/ui/sonner';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = 'http://localhost:8001';
 const API = `${BACKEND_URL}/api`;
 
 function App() {
@@ -330,6 +330,9 @@ function App() {
             <TabsTrigger value="generated" className="data-[state=active]:bg-pink-600">
               Generated ({generatedMemes.length})
             </TabsTrigger>
+            <TabsTrigger value="results" className="data-[state=active]:bg-pink-600">
+              📊 Results ({ocrResults.length})
+            </TabsTrigger>
             <TabsTrigger value="upload" className="data-[state=active]:bg-pink-600">
               <Upload className="w-4 h-4 mr-2" />
               Upload (Optional)
@@ -375,6 +378,54 @@ function App() {
                   <div className="text-center p-4 bg-pink-900/20 rounded-lg">
                     <p className="text-pink-300 font-semibold">✅ {ocrResults.length} images uploaded!</p>
                     <p className="text-gray-400 text-sm mt-1">These can be used as meme backgrounds</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Results Tab - Show uploaded meme data */}
+          <TabsContent value="results">
+            <Card className="bg-black/60 border-pink-500/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-pink-300">📊 OCR Results</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Extracted text and keywords from your uploaded memes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {ocrResults.length === 0 ? (
+                  <p className="text-gray-400 text-center py-8">No images uploaded yet. Upload memes in the Upload tab!</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-pink-500/30">
+                          <TableHead className="text-pink-300">Filename</TableHead>
+                          <TableHead className="text-pink-300">Extracted Text</TableHead>
+                          <TableHead className="text-pink-300">Keywords</TableHead>
+                          <TableHead className="text-pink-300">Word Count</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {ocrResults.map((result, idx) => (
+                          <TableRow key={idx} className="border-pink-500/20 hover:bg-pink-500/10">
+                            <TableCell className="text-gray-300">{result.filename}</TableCell>
+                            <TableCell className="text-gray-300 max-w-sm truncate">{result.extracted_text}</TableCell>
+                            <TableCell className="text-pink-200">
+                              <div className="flex flex-wrap gap-1">
+                                {result.keywords && result.keywords.slice(0, 5).map((kw, i) => (
+                                  <span key={i} className="bg-pink-600/30 text-pink-200 px-2 py-1 rounded text-xs">
+                                    {kw}
+                                  </span>
+                                ))}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-gray-300">{result.word_count}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
               </CardContent>
